@@ -1,0 +1,36 @@
+---
+title: 'Stat 135: Midterm 1 Problems'
+author: "Jonathan Stuart"
+date: "3/5/2018"
+output: github_document
+---
+```{r}
+library(caTools)
+```
+
+##\#1
+```{r}
+population <- c(1, 2, 2, 4, 8)
+mean(population)
+var(population)
+sampling_distr <- matrix(nrow = 25, ncol = 2)
+
+#filling up the matrix for the sampling distribution of sample size 2
+for(i in 21:25) {
+  sampling_distr[i, 1] <- 8
+}
+```
+
+```{r}
+samples <- combs(population, 2)
+sample_means <- 0
+for(i in 1:10) {
+  sample_means[i] <- mean(samples[i, ])
+}
+```
+
+##\#2
+```{r}
+
+```
+

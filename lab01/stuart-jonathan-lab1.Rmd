@@ -1,0 +1,492 @@
+---
+title: "Lab1"
+author: "Jonathan Stuart"
+date: "2/13/2018"
+output: pdf_document
+---
+
+First, let's load the data set.
+```{r}
+load("data/KaiserBabies.rda")
+```
+
+Next we can create variables for the population size and the sample size. 
+The population size will be 1236 of all pregnancies that occurred between 
+1960 and 1967 among women in the Kaiser Foundation Health Plan in Oakland, CA.
+
+```{r}
+population_size <- 1236
+sample_size <- 10
+```
+
+Next we can take a simple random sample, without replacement, of size 10 from
+the population of 1236.
+
+```{r}
+#taking a simple random sample
+set.seed(7)
+my_sample = sample(na.omit(infants$wt),10)
+```
+
+Now we can begin answering the questions asked in the lab assignment. 
+
+***
+#Question 1a
+
+Use the sample average to estimate the average weight of the mothers.
+```{r}
+#finding sample average
+x_bar <- mean(my_sample)
+```
+
+Calculate the estimated standard error of these estimates.
+```{r}
+#calculating s
+s <- sqrt((sum((my_sample - x_bar) ^ 2)) / (sample_size - 1))
+
+#calculating standard error 
+standard_error <- (s / sqrt(10)) * 
+  sqrt((population_size - sample_size) / (population_size - 1))
+```
+
+```{r, echo = FALSE} 
+cat("Our estimated standard error is ", standard_error, ".", sep = "")
+```
+
+Assuming normality holds, form a 95% confidence interval for the average 
+of the population .
+```{r}
+#constucting a confidence interval
+lower_limit <- x_bar - 1.96 * standard_error
+upper_limit <- x_bar + 1.96 * standard_error
+```
+
+```{r, echo = FALSE}
+cat("Our 95% confidence interval for average weight of mothers is [", 
+    lower_limit, ",", upper_limit, "]")
+```
+
+***
+#Quesion 1b
+
+Without using the `set.seed()` function, repeat this process 1000 times in order to 
+create 1000 different confidence intervals. 
+```{r}
+#creating relevant variables
+my_samples <- matrix(nrow = 1000, ncol = 10)
+x_bars <- 0
+standard_error_values <- 0 
+confidence_intervals <- matrix(nrow = 1000, ncol = 2)
+confidence_intverval_accuracy <- matrix(nrow = 1000, ncol = 1)
+ci_accuracy <- matrix(nrow = 1000, ncol = 1)
+true_average <- mean(na.omit(infants$wt))
+
+#for loop to generate confidence intervals
+for (i in 1:1000) {
+  my_samples[i, ] = sample(na.omit(infants$wt),10)
+  x_bars[i] <- mean(my_samples[i, ])
+  standard_error_values[i] <- sd(my_samples[i, 1:10]) / sqrt(10)
+  confidence_intervals[i, 1] <- x_bars[i] - 1.96 * standard_error_values[i]
+  confidence_intervals[i, 2] <- x_bars[i] + 1.96 * standard_error_values[i]
+  ci_accuracy[i] <- (true_average <= confidence_intervals[i, 2] & 
+                       true_average >= confidence_intervals[i, 1])
+}
+```
+
+*How many of them do you expect to cover the true average?*
+
+Based on the definition of confidence intervals as the range that will contain 
+the true value of the corresponding parameter with a specified degree of 
+certainty, we would theoretically expect around 950 of them to cover the 
+true average. 
+
+*How many do?*
+```{r, echo = FALSE}
+ci_table <- table(ci_accuracy)
+cat("Of our 1000 sample averages, ", unname(ci_table[1]), 
+    " values fell outside of their corresponding \nconfidence intervals, while ", 
+    unname(ci_table[2]), 
+    " values fell within their corresponding \nconfidence intervals.", sep = "")
+```
+
+Since the sample size, 10, is quite small, it should not be surprising that the
+actual frequency of confidence intervals that cover the true average deviates
+from the theoretical expectation.
+
+***
+#Question 1c
+
+Calculate the SD of the sample averages.  
+```{r}
+#calculating the SD of the sample means
+sd_means <- sd(x_bars)
+sd_means
+```
+
+*Is it close to the estimated standard error from Question 1a?*
+
+```{r, echo = FALSE}
+cat("The SD of our sample average is ", sd_means, 
+    ", while the estimated standard error from \nQuestion 1a is ", 
+    standard_error, ", a difference of ", abs(sd_means - standard_error), ".", 
+    sep = "")
+```
+
+Make a histogram of the sample averages to see if it seems plausible that 
+the probability histogram for the sample average follows the normal 
+curve pretty closely.
+```{r}
+#histogram of sample averages
+hist(x_bars, main = "Histogram of Sample Averages", xlab = "Sample Averages")
+```
+
+Yes, the histogram for the sample averages is approximately normal, 
+and skewed slightly left with a slightly longer right tail.
+
+Make a quantile-quantile plot to further investigate.
+```{r}
+#qqplot of x_bars
+qqnorm(x_bars, main = "qq Plot for Sample Averages")
+```
+
+*Does it seem like the confidence interval is valid?*
+```{r, echo = FALSE}
+cat("It appears that slightly less that 95% of the mass of sample averages is contained \nwithin the interval [", 
+    lower_limit, ", ", upper_limit, "], perhaps 85-90%. This means that the \nconfidence interval is slightly invalid.", sep = "")
+```
+
+***
+#Question 2a
+
+Start with your original sample and use it to construct a bootstrap population. 
+```{r}
+#constructing the bootstrap population
+vals = sort(unique(my_sample))
+counts = table(my_sample)
+# makes the bootstrap pop as rounded version of sample, not quite right
+boot_pop <- rep(vals, round(counts * population_size / length(my_sample)))
+length(boot_pop)
+```
+
+```{r, echo = FALSE}
+
+cat("boot_pop is now a vector of ", length(boot_pop), 
+    ", the number of members in the bootstrap population.", sep = "")
+```
+
+Using that bootstrap population, get 1000 simple random samples of size 10. 
+```{r}
+#sampling from the bootstrap population
+boot_pop_sample <- replicate(1000, sample(boot_pop, length(my_sample), FALSE)) 
+```
+
+```{r, echo = FALSE}
+cat("boot_pop_sample is now a matrix of ", length(boot_pop_sample[ , 1]), 
+    " rows (the number of members per sample), \nand ", 
+    length(boot_pop_sample[1, ]), " columns (the total number of samples).", 
+    sep = "")
+```
+
+For each of the samples, calculate the sample average and make a histogram of 
+these sample averages, putting a vertical line through the average of the 
+bootstrap population.
+```{r}
+#calculating the sample averages of the bootstrap samples
+boot_x_bars <- 0
+for (i in 1:1000) {
+  boot_x_bars[i] <- mean(boot_pop_sample[ , i])
+}
+
+#histogram of sample averages with vertical line at bootstrap pop. average
+hist(boot_x_bars, main = "Histogram of Bootstrap Sample Averages", 
+     xlab = "Bootstrap Sample Averages")
+boot_pop_mean <- mean(boot_pop)
+abline(v=boot_pop_mean,col="red", lwd = 2)
+```
+
+Calculate the SD of the sample averages.  
+```{r}
+#calculating the sd of the sample averages
+standard_deviation_averages <- sd(boot_x_bars)
+```
+
+*Is it close to the estimated standard error from Question 1a above?*
+
+```{r, echo = FALSE}
+cat("The SD of our sample averages is ", standard_deviation_averages, 
+    ", while the estimated standard error from \nQuestion 1a is ", 
+    standard_error, ", a difference of ", 
+    abs(standard_deviation_averages - standard_error), ".", sep = "")
+```
+So, yes! The values are very close.
+
+***
+#Question 2b
+
+Construct a 95% bootstrap confidence interval by taking the 2.5 percentile and
+the 97.5 percentile of the bootstrap sample averages.  
+```{r}
+#getting the quantlies of the bootstrap sample averages
+bootstrap_quantile <- quantile(boot_x_bars, probs = seq(0, 1, .025))
+
+#taking a look at the `bootstrap_quantile` vector
+head(bootstrap_quantile)
+```
+
+```{r, echo = FALSE}
+#constructing the bootstrap confidence intervals
+cat("The 95% confidence interval for the bootstrap population is [", 
+    unname(bootstrap_quantile[2]), ", ", unname(bootstrap_quantile[40]), "]")
+```
+
+*How does it compare to the confidence interval you got in Question 1a?*
+```{r, echo = FALSE}
+
+cat("The 95% confidence interval associated with our bootstrap population is \n[", 
+    unname(bootstrap_quantile[2]), ", ", unname(bootstrap_quantile[40]), "]", 
+    ", while the 95% confidence interval associated with our estimated \nstandard error in Question 1a was [", 
+    lower_limit, ", ", upper_limit, "]", ". The two intervals are nearly \nequivalent.", sep = "")
+```
+
+As we can see, the confidence intervals are very, very close. 
+
+***
+Now, we will replicate the same procedure for a sample size of 100 instead of 
+a sample size of 10.
+
+```{r}
+population_size <- 1236
+sample_size <- 100
+```
+
+Next we can take a simple random sample, without replacement, of size 100 from
+the population of 1236.
+
+```{r}
+#taking a simple random sample
+set.seed(7)
+my_sample = sample(na.omit(infants$wt),100)
+```
+
+Now we can begin answering the questions asked in the lab assignment. 
+
+***
+#Question 1a
+
+Use the sample average to estimate the average weight of the mothers.
+```{r}
+#finding sample average
+x_bar <- mean(my_sample)
+```
+
+Calculate the estimated standard error of these estimates.
+```{r}
+#calculating s
+s <- sqrt((sum((my_sample - x_bar) ^ 2)) / (sample_size - 1))
+
+#calculating standard error 
+standard_error <- (s / sqrt(100)) * 
+  sqrt((population_size - sample_size) / (population_size - 1))
+```
+
+```{r, echo = FALSE} 
+cat("Our estimated standard error is ", standard_error, ".", sep = "")
+```
+
+Assuming normality holds, form a 95% confidence interval for the average 
+of the population .
+```{r}
+#constucting a confidence interval
+lower_limit <- x_bar - 1.96 * standard_error
+upper_limit <- x_bar + 1.96 * standard_error
+```
+
+```{r, echo = FALSE}
+cat("Our 95% confidence interval for average weight of mothers is [", 
+    lower_limit, ",", upper_limit, "]")
+```
+
+***
+#Quesion 1b
+
+Without using the `set.seed()` function, repeat this process 1000 times in order to 
+create 1000 different confidence intervals. 
+```{r}
+#creating relevant variables
+my_samples <- matrix(nrow = 1000, ncol = 100)
+x_bars <- 0
+standard_error_values <- 0 
+confidence_intervals <- matrix(nrow = 1000, ncol = 2)
+confidence_intverval_accuracy <- matrix(nrow = 1000, ncol = 1)
+ci_accuracy <- matrix(nrow = 1000, ncol = 1)
+true_average <- mean(na.omit(infants$wt))
+
+#for loop to generate confidence intervals
+for (i in 1:1000) {
+  my_samples[i, ] = sample(na.omit(infants$wt),100)
+  x_bars[i] <- mean(my_samples[i, ])
+  standard_error_values[i] <- sd(my_samples[i, 1:100]) / sqrt(100)
+  confidence_intervals[i, 1] <- x_bars[i] - 1.96 * standard_error_values[i]
+  confidence_intervals[i, 2] <- x_bars[i] + 1.96 * standard_error_values[i]
+  ci_accuracy[i] <- (true_average <= confidence_intervals[i, 2] & 
+                       true_average >= confidence_intervals[i, 1])
+}
+```
+
+*How many of them do you expect to cover the true average?*
+
+Based on the definition of confidence intervals as the range that will contain 
+the true value of the corresponding parameter with a specified degree of 
+certainty, we would theoretically expect around 950 of them to cover the 
+true average. 
+
+*How many do?*
+```{r, echo = FALSE}
+ci_table <- table(ci_accuracy)
+cat("Of our 1000 sample averages, ", unname(ci_table[1]), 
+    " values fell outside of their corresponding \nconfidence intervals, while ", 
+    unname(ci_table[2]), 
+    " values fell within their corresponding \nconfidence intervals.", sep = "")
+```
+
+Since the sample size, 100, is much larger than 10, it makes sense that the
+actual frequency of confidence intervals that cover the true average is closer 
+to the theoretical expectation.
+
+***
+#Question 1c
+
+Calculate the SD of the sample averages.  
+```{r}
+#calculating the SD of the sample means
+sd_means <- sd(x_bars)
+sd_means
+```
+
+*Is it close to the estimated standard error from Question 1a?*
+
+```{r, echo = FALSE}
+cat("The SD of our sample average is ", sd_means, 
+    ", while the estimated standard error from \nQuestion 1a is ", 
+    standard_error, ", a difference of ", abs(sd_means - standard_error), ".", 
+    sep = "")
+```
+Yes, the values are very close.
+
+Make a histogram of the sample averages to see if it seems plausible that 
+the probability histogram for the sample average follows the normal 
+curve pretty closely.
+```{r}
+#histogram of sample averages
+hist(x_bars, main = "Histogram of Sample Averages", xlab = "Sample Averages")
+```
+
+Yes, the histogram for the sample averages is very nearly normal, if not 
+outright normal. The histogram very closely follows the normal curve. 
+
+Make a quantile-quantile plot to further investigate.
+```{r}
+#qqplot of x_bars
+qqnorm(x_bars, main = "qq Plot for Sample Averages")
+```
+
+*Does it seem like the confidence interval is valid?*
+```{r, echo = FALSE}
+cat("It appears that very nearly 95% of the mass of sample averages is contained \nwithin the interval [", 
+    lower_limit, ", ", upper_limit, "]. This means that the \nconfidence interval is extremely valid.", sep = "")
+```
+
+***
+#Question 2a
+
+Start with your original sample and use it to construct a bootstrap population. 
+```{r}
+#constructing the bootstrap population
+vals = sort(unique(my_sample))
+counts = table(my_sample)
+# makes the bootstrap pop as rounded version of sample, not quite right
+boot_pop <- rep(vals, round(counts * population_size / length(my_sample)))
+length(boot_pop)
+```
+
+```{r, echo = FALSE}
+
+cat("boot_pop is now a vector of ", length(boot_pop), 
+    ", the number of members in the bootstrap population.", sep = "")
+```
+
+Using that bootstrap population, get 1000 simple random samples of size 100. 
+```{r}
+#sampling from the bootstrap population
+boot_pop_sample <- replicate(1000, sample(boot_pop, length(my_sample), FALSE)) 
+```
+
+```{r, echo = FALSE}
+cat("boot_pop_sample is now a matrix of ", length(boot_pop_sample[ , 1]), 
+    " rows (the number of members per sample), \nand ", 
+    length(boot_pop_sample[1, ]), " columns (the total number of samples).", 
+    sep = "")
+```
+
+For each of the samples, calculate the sample average and make a histogram of 
+these sample averages, putting a vertical line through the average of the 
+bootstrap population.
+```{r}
+#calculating the sample averages of the bootstrap samples
+boot_x_bars <- 0
+for (i in 1:1000) {
+  boot_x_bars[i] <- mean(boot_pop_sample[ , i])
+}
+
+#histogram of sample averages with vertical line at bootstrap pop. average
+hist(boot_x_bars, main = "Histogram of Bootstrap Sample Averages", 
+     xlab = "Bootstrap Sample Averages")
+boot_pop_mean <- mean(boot_pop)
+abline(v=boot_pop_mean,col="red", lwd = 2)
+```
+
+Calculate the SD of the sample averages.  
+```{r}
+#calculating the sd of the sample averages
+standard_deviation_averages <- sd(boot_x_bars)
+```
+
+*Is it close to the estimated standard error from Question 1a above?*
+
+```{r, echo = FALSE}
+cat("The SD of our sample averages is ", standard_deviation_averages, 
+    ", while the estimated standard error from \nQuestion 1a is ", 
+    standard_error, ", a difference of ", 
+    abs(standard_deviation_averages - standard_error), ".", sep = "")
+```
+So, yes! The values are very close.
+
+***
+#Question 2b
+
+Construct a 95% bootstrap confidence interval by taking the 2.5 percentile and
+the 97.5 percentile of the bootstrap sample averages.  
+```{r}
+#getting the quantlies of the bootstrap sample averages
+bootstrap_quantile <- quantile(boot_x_bars, probs = seq(0, 1, .025))
+
+#taking a look at the `bootstrap_quantile` vector
+head(bootstrap_quantile)
+```
+
+```{r, echo = FALSE}
+#constructing the bootstrap confidence intervals
+cat("The 95% confidence interval for the bootstrap population is [", 
+    unname(bootstrap_quantile[2]), ", ", unname(bootstrap_quantile[40]), "]")
+```
+
+*How does it compare to the confidence interval you got in Question 1a?*
+```{r, echo = FALSE}
+
+cat("The 95% confidence interval associated with our bootstrap population is \n[", 
+    unname(bootstrap_quantile[2]), ", ", unname(bootstrap_quantile[40]), "]", 
+    ", while the 95% confidence interval associated with our estimated \nstandard error in Question 1a was [", 
+    lower_limit, ",", upper_limit, "]", ". The two intervals are nearly \nequivalent.", sep = "")
+```
+
+As we can see, the confidence intervals are very, very close. 

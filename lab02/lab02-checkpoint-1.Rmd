@@ -1,0 +1,188 @@
+---
+title: "Lab02 - HCMV"
+author: "Jonathan Stuart"
+date: "3/14/2018"
+output: pdf_document
+---
+```{r}
+library('dplyr')
+```
+
+
+**Spacings and the Expoential and the Gamma**  
+Gamma(2, 3, 4, $\lambda$) will probably be more accurate at finding clusters
+than the exponential($\lambda$) because of dependence issues. Summing 2, 3, or 4
+intervals will probably bring dependence; they'll be large or small together. And 
+in this case, the dependence might be helpful. 
+
+**Other Notes**  
+The plots and figures used in the text are good ideas; it's ok to use the ideas
+contained them, but they can't be explicityly reproduced for the report.
+
+Definitely do some CI work; and inside the $I(\lambda)$ expression will be 
+${\hat\lambda}$, which is normal when producing confidence intervals; we usually
+estimate the parameter.
+
+Picking the right size for the intervals is definitely a big part of the lab. He 
+says that the Poisson is actually not applicable, or that for certain sizes it's
+not applicable. He said it shouldn't be hard to find a size for which the Poisson
+is not applicable. And when it is not, the $chi-square$ and other tests will 
+indicate that. He also said that it would kind of be cheating to find just the 
+right interval size and just the right parameter to make the Poisson work. His
+advice was to write a function where the interval size would be an input, and have
+that function run all the tests and give the results for that choice of interval 
+size.  
+
+He said that the Max Number of Hits section is "one way to do it," it's one tool,
+but then so is the exponential/gamma discussion, and other things. Also, so is 
+just the counts of occurences. There are many ways to make an arguement here, but
+the idea is to make a convincing argument to our boss about how they should proceed
+with the study. 
+
+**Background**  
+- Biologists conjecture that clusters of palindromes in HCMV may serve the same 
+role as single long palindromes in Herpes simplex, i.e. indicators of origins
+of replication.  
+- HCMV DNA is 229, 354 base pairs long, with 296 total palindromes  
+- Infection rates, vulnerable populations, pathology of the virus. Genomics and
+other modern advances, application of knot theory to 3D stucture and molecular
+dynamics of DNA.  
+
+**Investigations**  
+1. How do we find clusters of palindromes?  
+2. How do we determine whether a cluster is a chance occurrence or an 
+indication of a replication site?  
+- Use the answers to these questions to advise a scientist about to start a 
+search for an origin of replication  
+- Pg. 82 - Discussion of interval size is key; does the interval with the largest
+number of palindromes indicate a replication site? How do you know if your 
+interval size is accurate or leads to indicative results? What happens if it's
+too big? Too small?  
+
+**Theory**  
+- There are many properties of the homogeneous Poisson process that can be used
+to check how well this reference model first the DNA data. So, we're essentially
+asking of the Poisson process is an accurate distribtuion to apply to the data.  
+- You can compare the observed counts to the expected number of counts per 
+region. This leads to the $chi-square$ *Goodness-of-Fit* for this probability 
+distribution (this is an hypothesis test). 
+     - We could potentially seek to optimize the interval size through goodness 
+     of fit testing. 
+     - Another option would be to use a residual plot to measure goodness-of-fit.  
+     - Another option is to compare the actual locations of palindromes with the
+     expected locations of palindromes from a uniform distribution.
+- Does the distance between successive hits follow the expoential distribution, 
+as they should? Does the distance between, 2, 3, 4, etc hits follow a gamma
+distribution, as they should?  
+- We can use the distribution to find the projected maximum number of hits (this 
+an hypothesis test.)
+- We can have a discussion of using the method of moments and the method of 
+maximum likelihood to get the estimate of $\lambda$, $\hat\lambda$.
+- From the likelihood estimates we can compute the information, and use this to 
+construct confidence intervals.
+- We can conduct a final hypothesis test with a null hypothesis and an 
+alternative hypothesis test, using a *z statistic*
+
+
+
+
+**Extensions**
+This is where you'll find the basis of the winning approach. It's moving a 
+window of some size along the DNA, one base pair at a time, and finding the 
+location of the window with the largest palindrome count. 
+
+**Potential Plots (4)**  
+Pg 81 - Random plots of 296 locations between 1 and 229, 354  
+Pg 82 - Compare spacings between palindromes, sums of pairs of spacings, triplets
+to what you would expect from a random scatter  
+
+**Potential Tables(2)**  
+-Pg 82 - Counts of palindromes in nonoverlapping regions compared to what you 
+expect from a uniform random scatter. *Show* that the counts for short regions
+will be more variable than the counts for larger regions.  
+-
+
+
+**To begin, pursue the point of view that structure in the data is indicated by 
+departures from a univorm scatter of palindroms across the DNA.
+
+
+
+Let's look at 100 instances of random scatters of palindromes.
+```{r}
+set.seed(3)
+random_palindromes <- matrix(NA , 296, 100)
+for (i in 1:100) {
+  random_palindromes[ , i] <- sort(sample(1:229354, 296, replace = FALSE))
+}
+
+```
+
+```{r}
+
+sequence <- seq(from = 1, to = 229354, by = 4000)
+
+for (i in 1:length(sequence)){
+  
+  for (j in 1:296) {
+    if (random_palindromes[j, 1] <= 4000) {
+      print(random_palindromes[j , 1])
+    }
+  }
+  
+  for (j in 1:296) {
+    if (4001 <= random_palindromes[j, 1] & random_palindromes[j, 1] <= 8000 ) {
+      print(random_palindromes[j , 1])
+    }
+  }
+}
+```
+```{r}
+random_palindromes1 <- as.data.frame(random_palindromes[ , 1])
+```
+
+
+```{r}
+for (i in 1:length(sequence[-1])){  
+  for (j in 1:295) {
+    if (random_palindromes[j, 1] <= (sequence[i + 1] - sequence[i])) {
+      print(random_palindromes[j , 1])
+    }
+  }
+}
+```
+
+```{r}
+nrow(filter(random_palindromes1, random_palindromes[, 1] < 4000))
+
+iterator <- seq(from = 1, to = 229354, by = 4000)
+
+
+for (i in 1:length(iterator)) {
+count <- nrow(filter(random_palindromes1, random_palindromes[, 1] > (iterator[i + 1] - iterator[1]) & random_palindromes[, 1] < iterator[i + 2] - iterator[1]))
+print(count)
+}
+
+#running for loop on hcmv data
+count <- 0
+count[1] <- nrow(filter(data, data[, 1] < 4000))
+for (i in 1:length(iterator)) {
+count[i + 1] <- nrow(filter(data, data[, 1] > (iterator[i + 1] - iterator[1]) & data[, 1] < iterator[i + 2] - iterator[1]))
+}
+count <- count[1:57]
+
+
+nrow(filter(random_palindromes1, random_palindromes[, 1] > 8001 & random_palindromes[, 1] < 12000))
+nrow(filter(random_palindromes1, random_palindromes[, 1] > 12001 & random_palindromes[, 1] < 16000))
+nrow(filter(random_palindromes1, random_palindromes[, 1] > 16001 & random_palindromes[, 1] < 20000))
+nrow(filter(random_palindromes1, random_palindromes[, 1] > 20001 & random_palindromes[, 1] < 24000))
+nrow(filter(random_palindromes1, random_palindromes[, 1] > 24001 & random_palindromes[, 1] < 28000))
+
+
+
+```
+
+```{r}
+data <- read.csv("hcmv.csv")
+```
+
