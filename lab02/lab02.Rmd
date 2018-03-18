@@ -124,66 +124,11 @@ for (i in 1:100) {
 ```
 
 ```{r}
-
-sequence <- seq(from = 1, to = 229354, by = 4000)
-
-for (i in 1:length(sequence)){
-  
-  for (j in 1:296) {
-    if (random_palindromes[j, 1] <= 4000) {
-      print(random_palindromes[j , 1])
-    }
-  }
-  
-  for (j in 1:296) {
-    if (4001 <= random_palindromes[j, 1] & random_palindromes[j, 1] <= 8000 ) {
-      print(random_palindromes[j , 1])
-    }
-  }
+#funtion to calculate the true length of the vector of palindrome counts
+true_length <- function(x) {
+  floor(229354/x)
 }
-```
-```{r}
-random_palindromes1 <- as.data.frame(random_palindromes[ , 1])
-```
 
-
-```{r}
-for (i in 1:length(sequence[-1])){  
-  for (j in 1:295) {
-    if (random_palindromes[j, 1] <= (sequence[i + 1] - sequence[i])) {
-      print(random_palindromes[j , 1])
-    }
-  }
-}
-```
-
-```{r}
-nrow(filter(random_palindromes1, random_palindromes[, 1] < 4000))
-
-iterator <- seq(from = 1, to = 229354, by = 4000)
-
-
-for (i in 1:length(iterator)) {
-count <- nrow(filter(random_palindromes1, random_palindromes[, 1] > (iterator[i + 1] - iterator[1]) & random_palindromes[, 1] < iterator[i + 2] - iterator[1]))
-print(count)
-}
-```
-
-```{r}
-#running for loop on hcmv data
-count <- 0
-iterator <- seq(from = 1, to = 229354, by = 4000)
-count[1] <- nrow(filter(data, data[, 1] < 4000))
-for (i in 1:length(iterator)) {
-count[i + 1] <- nrow(filter(data, data[, 1] > (iterator[i + 1] - iterator[1]) & data[, 1] < iterator[i + 2] - iterator[1]))
-}
-count <- count[1:57]
-count
-
-#make a function that takes input of interval size, possibly also data set
-```
-
-```{r}
 #function that counts the number of palindromes and takes input of interval size
 palindrome_count <- function(x) {
   counts <- 0
@@ -193,12 +138,8 @@ palindrome_count <- function(x) {
     counts[i + 1] <- nrow(filter(data, data[, 1] > (iterator[i + 1] - iterator[1]) & 
                                   data[, 1] < iterator[i + 2] - iterator[1]))
   }
+  counts <- counts[1:true_length(x)]
   return(counts)
-}
-
-#funtion to calculate the true length of counts vectors
-true_length <- function(x) {
-  floor(229354/x)
 }
 
 #function that counts the number of palindromes and takes input of interval size
@@ -211,6 +152,7 @@ super_palindrome_count <- function(data, x) {
     counts[i + 1] <- nrow(filter(data, data[, 1] > (iterator[i + 1] - iterator[1]) & 
                                   data[, 1] < iterator[i + 2] - iterator[1]))
   }
+  counts <- counts[1:true_length(x)]
   return(counts)
 }
 ```
@@ -219,11 +161,44 @@ super_palindrome_count <- function(data, x) {
 
 ```{r}
 #goodness of fit code
+
+#
+counts_4000 <- palindrome_count(4000)
+length(counts_4000)
+lambda <- sum(counts_4000) / true_length(4000)
+lambda
+
+observed <- c(7, 8, 10, 9, 8, 5, 4, 6)
+expected <- 0
+
+#calculating expected values
+expected[1] <- 57*(dpois(0, 5.157895) + dpois(1, 5.157895) + dpois(2, 5.157895))
+expected[2] <- 57*dpois(3, lambda)
+expected[3] <- 57*dpois(4, lambda)
+expected[4] <- 57*dpois(5, lambda)
+expected[5] <- 57*dpois(6, lambda)
+expected[6] <- 57*dpois(7, lambda)
+expected[7] <- 57*dpois(8, lambda)
+expected[8] <- 57*(dpois(9, lambda) + dpois(10, lambda) + dpois(11, lambda) + dpois(12, lambda) + dpois(13, lambda) + dpois(14, lambda))
+
+#this needs to be done to use the chisq.test() function
+#expected <- expected/57
+
+sum((observed - expected)^2 / expected)
+
+
+```
+
+```{r}
 #residuals computation code
 #lambda hat code, estimating lambda with MoM and MLE
 #information and confidence interval code
 #exponential and gamma for distance between hits code
 #z-test code
 #sliding window code
+lambda
 ```
+
+
+
 
