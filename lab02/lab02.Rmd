@@ -123,6 +123,7 @@ for (i in 1:100) {
 
 ```
 
+functions to produce counts with variable interval size and data set
 ```{r}
 #funtion to calculate the true length of the vector of palindrome counts
 true_length <- function(x) {
@@ -157,48 +158,229 @@ super_palindrome_count <- function(data, x) {
 }
 ```
 
-
-
+Goodness of Fit for Poisson with interval size 500
 ```{r}
 #goodness of fit code
 
-#
-counts_4000 <- palindrome_count(4000)
-length(counts_4000)
-lambda <- sum(counts_4000) / true_length(4000)
+#counting number of palindromes in each interval
+counts <- palindrome_count(500)
+counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
 lambda
 
-observed <- c(7, 8, 10, 9, 8, 5, 4, 6)
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed <- c(sum(count_table[1]), count_table[2], count_table[3], sum(count_table[4:7]))
+
+observed <- unname(observed)
+observed
+expected <- 0
+expected
+
+#calculating expected values
+expected[1] <- length(counts) * dpois(0, lambda)
+expected[2] <- length(counts) * dpois(1, lambda)
+expected[3] <- length(counts) * dpois(2, lambda)
+expected[4] <- length(counts) * sum(dpois(3:8, lambda))
+
+#calculating the chi-square test statistic
+chi_test_statistic <- sum((observed - expected)^2 / expected)
+
+#calculating the degrees of freedom
+degrees_of_freedom <- length(expected) - 2
+
+1 - dchisq(chi_test_statistic, degrees_of_freedom)
+
+#calculating risiduals
+  (observed - expected) / sqrt(expected)
+
+#code for the maximum count
+1 - (sum(dpois(0:7, lambda)))^500
+
+```
+
+Goodness of Fit for Poisson with interval size 2500
+```{r}
+#goodness of fit code
+
+#counting number of palindromes in each interval
+counts <- palindrome_count(2500)
+counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
+lambda
+
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed <- c(count_table[1], count_table[2], count_table[3], count_table[4], count_table[5], count_table[6], sum(count_table[7:9]))
+
+observed <- unname(observed)
+observed
 expected <- 0
 
 #calculating expected values
-expected[1] <- 57*(dpois(0, 5.157895) + dpois(1, 5.157895) + dpois(2, 5.157895))
-expected[2] <- 57*dpois(3, lambda)
-expected[3] <- 57*dpois(4, lambda)
-expected[4] <- 57*dpois(5, lambda)
-expected[5] <- 57*dpois(6, lambda)
-expected[6] <- 57*dpois(7, lambda)
-expected[7] <- 57*dpois(8, lambda)
-expected[8] <- 57*(dpois(9, lambda) + dpois(10, lambda) + dpois(11, lambda) + dpois(12, lambda) + dpois(13, lambda) + dpois(14, lambda))
+expected[1] <- length(counts) * dpois(0, lambda)
+expected[2] <- length(counts) * dpois(1, lambda)
+expected[3] <- length(counts) * dpois(2, lambda)
+expected[4] <- length(counts) * dpois(3, lambda)
+expected[5] <- length(counts) * dpois(4, lambda)
+expected[6] <- length(counts) * dpois(5, lambda)
+expected[7] <- length(counts) * sum(dpois(6:13, lambda))
 
-#this needs to be done to use the chisq.test() function
-#expected <- expected/57
 
-sum((observed - expected)^2 / expected)
+#calculating the chi-square test statistic
+chi_test_statistic <- sum((observed - expected)^2 / expected)
+
+#calculating the degrees of freedom
+degrees_of_freedom <- length(expected) - 2
+
+1 - dchisq(chi_test_statistic, degrees_of_freedom)
+
+#calculating risiduals
+  (observed - expected) / sqrt(expected)
+
+#code for the maximum count
+1 - (sum(dpois(0:12, lambda)))^2500
 
 
 ```
+
+Goodness of Fit for Poisson with interval size 4000
+```{r}
+
+  #counting number of palindromes in each interval
+  counts <- super_palindrome_count(data, 4000)
+  counts
+  
+  #estimating lambda_hat as x_bar
+  lambda <- sum(counts) / length(counts)
+  lambda
+  
+  #calculating the observed values (this doesn't account for intervals with zero palindromes)
+  count_table <- table(counts)
+  count_table
+  
+  observed <- c(sum(count_table[1:2]), count_table[3], count_table[4], 
+                count_table[5], count_table[6], count_table[7], 
+                count_table[8], sum(count_table[9:length(count_table)]))
+  
+  observed <- unname(observed)
+  observed
+  expected <- 0
+  
+  #calculating expected values
+  expected[1] <- length(counts) * sum(dpois(0:2, lambda))
+  expected[2] <- length(counts) * dpois(3, lambda)
+  expected[3] <- length(counts) * dpois(4, lambda)
+  expected[4] <- length(counts) * dpois(5, lambda)
+  expected[5] <- length(counts) * dpois(6, lambda)
+  expected[6] <- length(counts) * dpois(7, lambda)
+  expected[7] <- length(counts) * dpois(8, lambda)
+  expected[8] <- length(counts) * sum(dpois(9:14, lambda))
+  
+  #calculating the chi-square test statistic
+  chi_test_statistic <- sum((observed - expected)^2 / expected)
+  
+  #calculating the degrees of freedom
+  degrees_of_freedom <- length(expected) - 2
+  
+  1 - dchisq(chi_test_statistic, degrees_of_freedom)
+  
+  #calculating risiduals
+  (observed - expected) / sqrt(expected)
+  
+  #code for the maximum count
+1 - (sum(dpois(0:13, lambda)))^4000
+
+```
+
+Goodness of Fit for Poisson with interval size 7000
+```{r}
+#goodness of fit code
+
+#counting number of palindromes in each interval
+counts <- palindrome_count(7000)
+counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
+lambda
+
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed <- c(sum(count_table[1:2]), count_table[3], count_table[4], count_table[5], count_table[6], count_table[7], count_table[8], count_table[9], count_table[10], count_table[11], sum(count_table[12:13]))
+
+observed <- unname(observed)
+observed
+expected <- 0
+
+#calculating expected values
+expected[1] <- length(counts) * sum(dpois(0:4, lambda))
+expected[2] <- length(counts) * dpois(5, lambda)
+expected[3] <- length(counts) * dpois(6, lambda)
+expected[4] <- length(counts) * dpois(7, lambda)
+expected[5] <- length(counts) * dpois(8, lambda)
+expected[6] <- length(counts) * dpois(9, lambda)
+expected[7] <- length(counts) * dpois(10, lambda)
+expected[8] <- length(counts) * dpois(11, lambda)
+expected[9] <- length(counts) * dpois(12, lambda)
+expected[10] <- length(counts) * dpois(13, lambda)
+expected[11] <- length(counts) * sum(dpois(14:18, lambda))
+
+#calculating the chi-square test statistic
+chi_test_statistic <- sum((observed - expected)^2 / expected)
+
+#calculating the degrees of freedom
+degrees_of_freedom <- length(expected) - 2
+
+1 - dchisq(chi_test_statistic, degrees_of_freedom)
+
+#calculating risiduals
+  (observed - expected) / sqrt(expected)
+
+#code for the maximum count
+1 - (sum(dpois(0:17, lambda)))^7000
+
+```
+
+Code for lambda hat; discuss in the context of method of moments and maximum likelihood
+```{r}
+lambda_hat <- mean(counts)
+lambda_hat
+```
+
 
 ```{r}
-#residuals computation code
-#lambda hat code, estimating lambda with MoM and MLE
 #information and confidence interval code
 #exponential and gamma for distance between hits code
+#maximum count code
 #z-test code
 #sliding window code
-lambda
 ```
 
 
+Background on the problem. HCVM family, volatility, desire to find replication sites. Replication
+sites appear as clusters of palindromes.
 
+These are the main questions we want to answer:
+1. How do we find clusters of palindromes?  
+2. How do we determine whether a cluster is a chance occurrence or an 
 
+Whether or not the poisson fits the data. Does it fit the data better than random scatter?
+
+How do we know that size interval to use?
+
+Conducted multiple hypothesis tests to check whether a poisson distr could be effectively 
+fit to the data.
+
+Yes, poisson is applicable, which allows us to see where we might want to focus for clustering.
+We can look to the max counts data. 
