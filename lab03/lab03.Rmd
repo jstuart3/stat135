@@ -1,0 +1,292 @@
+---
+title: "Lab03 - Dungeness Crab Growth"
+author: "Jonathan Stuart"
+date: "5/1/2018"
+output: html_document
+---
+
+```{r, echo = FALSE, include = FALSE}
+#mounting packages
+library('dplyr')
+library('ggplot2')
+library(scatterplot3d) 
+
+#reading in data
+crab_molt <- read.csv('crabmolt.csv')
+crab_pop <- read.csv('crabpop.csv')
+```
+
+###Problem 1
+```{r}
+#exploring the data - crab_molt
+names(crab_molt)
+str(crab_molt)
+head(crab_molt)
+
+```
+
+```{r}
+#exploring the data - crab_pop
+names(crab_pop)
+str(crab_pop)
+head(crab_pop)
+```
+
+
+**Analysis by Year**  
+```{r, echo=F}
+#lets get data by year
+year <- select(crab_molt, year)
+table(year)
+
+#data by size; intervals, smaller than a given size, larger than a given size
+crab_molt_81 <- filter(crab_molt, year == 81)
+crab_molt_82 <- filter(crab_molt, year == 82)
+crab_molt_92 <- filter(crab_molt, year == 92)
+
+
+#plots 
+plot(crab_molt_81$inc, ylab = "Incremental Growth (mm)", main = "Growth by Year - 1981")
+abline(h = c(10, 20), col = 'red')
+
+plot(crab_molt_82$inc, ylab = "Incremental Growth (mm)", main = "Growth by Year - 1982")
+abline(h = c(10, 20), col = 'red')
+
+plot(crab_molt_92$inc, ylim = c(6, 25), ylab = "Incremental Growth (mm)", main = "Growth by Year - 1992")
+abline(h = c(10, 20), col = 'red')
+
+#scatterplot matrices
+pairs(~presz+postsz+inc,data=crab_molt_81, 
+   main="Scatterplot Matrix - 1981")
+
+pairs(~presz+postsz+inc,data=crab_molt_82, 
+   main="Scatterplot Matrix - 1982")
+
+pairs(~presz+postsz+inc,data=crab_molt_92, 
+   main="Scatterplot Matrix - 1992")
+
+
+#3d scatter plots
+scatterplot3d(crab_molt_81$presz,crab_molt_81$postsz,crab_molt_81$inc, pch=16, highlight.3d=TRUE,
+  type="h", main="Growth v. Premolt Size v. Postmolt Size - 1981", xlab = "Premolt Size", ylab = "Postmolt Size", zlab = "Incremental Growth (mm)")
+
+scatterplot3d(crab_molt_82$presz,crab_molt_82$postsz,crab_molt_82$inc, pch=16, highlight.3d=TRUE,
+  type="h", main="Growth v. Premolt Size v. Postmolt Size - 1982", xlab = "Premolt Size", ylab = "Postmolt Size", zlab = "Incremental Growth (mm)")
+
+scatterplot3d(crab_molt_92$presz,crab_molt_92$postsz,crab_molt_92$inc, pch=16, highlight.3d=TRUE,
+  type="h", main="Growth v. Premolt Size v. Postmolt Size - 1992", xlab = "Premolt Size", ylab = "Postmolt Size", zlab = "Incremental Growth (mm)")
+```
+
+From the 3D scatterplots, perhaps the most notable result is the indication of a negative correlation between Incremental Growth and Pre/Postmolt sizes in 1981 and 1982 (most pronounced in 1982), and the apparent lack of that correlation in 1992. 
+
+**Analysis by Obervation Method**  
+*Summarize one relevant variable using numbers and words*  
+```{r, echo=F}
+#data by observation method
+lab <- filter(crab_molt, lf == 1)
+wild <- filter(crab_molt, lf == 0)
+
+#boxplots by observation method
+boxplot(lab[1:3], main = "Crabs Molted in Laboratory", names = c("Premolt Size", "Postmolt Size", "Incremental Growth"))
+boxplot(wild[1:3], main = "Crabs Molted in Natural Setting", names = c("Premolt Size", "Postmolt Size", "Incremental Growth"))
+```
+
+In the boxplots above, we see that the data from the crabs molting in the laboratory had far more outlying values than the data from the crabs that molted in a natural setting. Also notable is the range of values indicated for all three variables. For both the pre and post molt sizes of the crabs that molted in a natural setting, we see a range of approximately 25 mm. For both the pre and post molt sizes of the crabs that molted in the laboratory, however, we see a range of approximately 50 mm. The incremental growth statistics between those crabs that molted in both the natural and laboratory settings appear to be quite near each other, with the larger increments being recorded for the laboratory crabs. This last point is notable as it contradicts what we would expect to see, given Nolan/Speed's comments that "crabs in captivity have smaller molt increments than those in the wild."[*Stat Labs*, Nolan, Speed. Pg 143]  
+
+Numerical summary of crabs molted in laboratory.  
+```{r}
+summary(lab[1:3])
+```
+
+Numerical summary of crabs molted in a natural setting.  
+```{r}
+summary(wild[1:3])
+```
+
+###Problem 2
+```{r}
+#building a regression model (least squares)
+#pg 147
+
+#y
+response <- crab_molt['presz']
+response <- unlist(response)
+
+#x
+predictor <- crab_molt['postsz']
+predictor <- unlist(predictor)
+
+#calculating the correlation coefficient
+corr_coef <- sum((((predictor - mean(predictor)) / sd(predictor)) * ((response - mean(response)) / sd(response)))) / length(predictor)
+
+corr_coef_function <- cor(predictor, response)
+
+#calculating beta_hat_1 using correlation coefficient
+beta_hat_1_a <- corr_coef * (sd(response) / sd(predictor))
+
+#calculating beta_hat_1 without correlation coefficient
+beta_hat_1_b <- sum(((predictor - mean(predictor)) * (response - mean(response)))) / sum((predictor - mean(predictor))^2)
+
+#calculating beta_hat_0_a
+beta_hat_0_a <- mean(response) - beta_hat_1_a * mean(predictor)
+
+#calculating beta_hat_0_b
+beta_hat_0_b <- mean(response) - beta_hat_1_b * mean(predictor)
+
+#linear regression model
+regression <- function(x){
+  beta_hat_0_a + beta_hat_1_a * x
+}
+```
+
+###Problem 3
+```{r, echo=F}
+#Scatter Plot with regression line
+plot(crab_molt[ , 'postsz'], crab_molt[ , 'presz'], type = 'p', xlab = "Postmolt Size", ylab = "Premolt Size", main = "Premolt Sizes v. Postmolt Sizes", col = 'brown')
+abline(beta_hat_0_a, beta_hat_1_a, col = 'blue', lwd = 2, text(80, 40, labels = "Regression Line", col = 'blue'))
+```
+
+###Problem 4
+*What is your interpretation of this regression line?*  
+This is the line that minimizes the squared distances between itself and each data point. Plainly put, it is the line that best fits the data. Along the regression line, each data point's squared distance from it is minimized.  
+
+*What percent of the variation of the premolt sizes is explained by the model?*  
+The proportion of variation explained by the regression line is captured by the *coefficient of determination,* $r^2$. It is a measure of how well the variation in one variable explains the variation in another variable. In this case, the percentage of variation $r^2$ is 
+```{r, echo=FALSE}
+corr_coef^2 * 100
+```
+
+The higher the value of $r^2$ (maximum +/- 100% as a percentage), the more confidently we can rely on the regression line to make accurate predictions. 
+
+###Problem 5  
+According to Nolan and Speed, "[t]he residual is a name for the difference between a crab’s
+actual premolt size and the regression line prediction of it."[*Stat Labs*, Nolan, Speed. Pg 148]
+
+```{r, echo=F}
+#examining the residuals
+residuals <- (response - beta_hat_0_a - (beta_hat_1_a * predictor))
+
+qqnorm(residuals, main = "Normal Quantile Plot", xlab = "Standard Normal Quantiles", ylab = "Residuals")
+```
+
+We see that the normal quantile-quantile plot follows nearly a straight line, indicating that the residuals are approximately normally distributed.
+
+###Problem 6  
+According to Rice, for large values of $n$, the estimated slope and intercept of a linear regression model are approximately normally distributed. This is due to the fact that if the terms representing random noise are independent and the predictor values are well-behaved, then a version of the central limit theorem applies for large $n$.[*Mathematical Statistics and Data Analysis*, Rice. Pg 549-550] Hypothesis tests can then be carried out using the following as a t-test test statistic:  
+
+<center>$\frac{{\hat\beta}_{i} - \beta_{i}}{s_{\hat\beta_{i}}}$,</center>
+
+where the ${s_{\hat\beta_{i}}}$ are the estimated standard errors of ${\hat\beta}_{0}$ and ${\hat\beta}_{1}$.    
+
+
+```{r}
+#Test the null hypothesis that the postmolt size has no predictive value
+s_squared <- sum(residuals^2)/(length(crab_molt$presz)-2)
+
+s_beta_0_a_squared <- (s_squared * sum(crab_molt$postsz^2)) / ((length(crab_molt$postsz) * sum((crab_molt$postsz^2))) - (sum(crab_molt$postsz))^2)
+
+s_beta_1_a_squared <- (length(crab_molt$postsz) * s_squared) / ((length(crab_molt$postsz) * sum((crab_molt$postsz^2))) - (sum(crab_molt$postsz))^2)
+
+#beta_0 t-test statistic
+beta_hat_0_a / sqrt(s_beta_0_a_squared)
+
+#Beta_1 t-test statistic
+beta_hat_1_a / sqrt(s_beta_1_a_squared)
+```
+
+Since when subjecting the estimates of intercept and slope to the t-test, as described in Rice pg. 550, we get p-values 
+```{r, echo=F}
+dt(beta_hat_0_a / sqrt(s_beta_0_a_squared), 19)
+```
+
+and
+
+```{r, echo=F}
+dt(beta_hat_1_a / sqrt(s_beta_1_a_squared), 19)
+```
+
+respectively, we can confidently accept the null hypothesis and conclude that the postmolt size does in fact have predictive value.  
+
+###Problem 7
+```{r}
+#dropping juvenile crabs, creating new linear model
+mature_crab_molt <- filter(crab_molt, presz >= 100)
+
+#y
+mature_response <- mature_crab_molt['presz']
+mature_response <- unlist(mature_response)
+
+#x
+mature_predictor <- mature_crab_molt['postsz']
+mature_predictor <- unlist(mature_predictor)
+
+#calculating the correlation coefficient
+mature_corr_coef <- sum((((mature_predictor - mean(mature_predictor)) / sd(mature_predictor)) * ((mature_response - mean(mature_response)) / sd(mature_response)))) / length(mature_predictor)
+
+mature_corr_coef_function <- cor(mature_predictor, mature_response)
+
+#calculating beta_hat_1 using correlation coefficient
+mature_beta_hat_1_a <- mature_corr_coef * (sd(mature_response) / sd(mature_predictor))
+
+#calculating beta_hat_1 without correlation coefficient
+mature_beta_hat_1_b <- sum(((mature_predictor - mean(mature_predictor)) * (mature_response - mean(mature_response)))) / sum((mature_predictor - mean(mature_predictor))^2)
+
+#calculating beta_hat_0_a
+mature_beta_hat_0_a <- mean(mature_response) - mature_beta_hat_1_a * mean(mature_predictor)
+
+#calculating beta_hat_0_b
+mature_beta_hat_0_b <- mean(mature_response) - mature_beta_hat_1_b * mean(mature_predictor)
+
+#linear regression model
+mature_regression <- function(x){
+  mature_beta_hat_0 + mature_beta_hat_1_a * x
+}
+```
+```{r, echo=F}
+#Scatter Plot with regression line
+plot(crab_molt[ , 'postsz'], crab_molt[ , 'presz'], type = 'p', xlab = "Postmolt Size", ylab = "Premolt Size", main = "Premolt Sizes v. Postmolt Sizes")
+abline(beta_hat_0_a, beta_hat_1_a, col = 'blue', lwd = 2, text(50, 55, labels = "Original\n Regression Line", col = 'blue'))
+abline(mature_beta_hat_0_a, mature_beta_hat_1_a, col = 'red', lwd = 2, text(80, 40, labels = "Mature\n Regression Line", col = 'red'))
+```
+
+
+###Problem 8
+Using the postmolt size of the molted crabs collected immediately following the 1983 molting season, we use the regression method developed in **Problem 2** to predict the premolt sizes of the crabs collected.
+```{r}
+#running the regression on crab_pop and analyzing
+molted_crabs <- group_by(crab_pop, shell)
+molted_crabs_regression <- regression(molted_crabs[ , 1])
+molted_crabs <- as.data.frame(molted_crabs)
+molted_crabs$regression <- molted_crabs_regression 
+```
+
+Here we have a summary of the premolt size data, obtained through regression, and the requested histogram.
+```{r, message = FALSE, echo=F}
+summary(molted_crabs$regression)
+
+ggplot(data = molted_crabs, aes(x = molted_crabs$regression, y = ..count.., fill = factor(shell))) + 
+    geom_histogram(binwidth = 5) + xlab("Size (mm)") + ylab("Count") + scale_fill_discrete(name = "Molt Status", labels = c("Not Molted", "Molted")) + labs(title = "Size Distribution of Female Dungeness Crabs After 1983 Molting Season")
+```
+
+
+
+```{r, echo=F,include=F, message=F}
+#crab_pop_0 <- filter(crab_pop, shell == 0)
+#crab_pop_1 <-filter(crab_pop, shell == 1)
+
+#premolt_1 <- -25.214 + 1.073 * crabpop_1$size
+#summary(premolt_1)
+
+#hist(crab_pop_0$size, breaks = 20, xlab = "size (mm)", ylab = "Count", main = "", xlim = c(90,180), ylim = c(0,60))
+#hist(crab_pop_1$size, col = "grey", add = TRUE, breaks = 10)
+#legend("topleft", c("Did not Molt", "Molted"), fill = c("white","grey"),col=c("white","gray"))
+
+#s_2 = sum(residual^2)/(472-2)
+
+#se = sqrt(s_2/sum((crabmolt$postsz - mean(crabmolt$postsz))^2))
+
+#(1.073/se)
+
+```
+
+

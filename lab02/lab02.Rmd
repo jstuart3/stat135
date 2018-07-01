@@ -97,7 +97,7 @@ to what you would expect from a random scatter
 -Pg 82 - Counts of palindromes in nonoverlapping regions compared to what you 
 expect from a uniform random scatter. *Show* that the counts for short regions
 will be more variable than the counts for larger regions.  
--
+-Summarizing the Hypothesis Tests for each of the intervals
 
 
 **To begin, pursue the point of view that structure in the data is indicated by 
@@ -106,6 +106,9 @@ departures from a univorm scatter of palindroms across the DNA.
 Let's mount the necessary packages
 ```{r}
 library('dplyr')
+library('ggplot2')
+library('MASS')
+library('kableExtra')
 ```
 
 Let's read in the data
@@ -199,7 +202,15 @@ degrees_of_freedom <- length(expected) - 2
   (observed - expected) / sqrt(expected)
 
 #code for the maximum count
-1 - (sum(dpois(0:7, lambda)))^500
+1 - (sum(dpois(0:7, lambda)))^(229354/500)
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+#lambda - (1.96 / sqrt(8/lambda))
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+upper-lower
 
 ```
 
@@ -247,7 +258,14 @@ degrees_of_freedom <- length(expected) - 2
   (observed - expected) / sqrt(expected)
 
 #code for the maximum count
-1 - (sum(dpois(0:12, lambda)))^2500
+1 - (sum(dpois(0:12, lambda)))^(229354/2500)
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+upper-lower
 
 
 ```
@@ -297,13 +315,20 @@ Goodness of Fit for Poisson with interval size 4000
   (observed - expected) / sqrt(expected)
   
   #code for the maximum count
-1 - (sum(dpois(0:13, lambda)))^4000
+1 - (sum(dpois(0:13, lambda)))^(floor(229354/4000))
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+upper-lower
 
 ```
 
 Goodness of Fit for Poisson with interval size 7000
 ```{r}
-#goodness of fit code
+#goodness of fit code - 7000
 
 #counting number of palindromes in each interval
 counts <- palindrome_count(7000)
@@ -348,7 +373,15 @@ degrees_of_freedom <- length(expected) - 2
   (observed - expected) / sqrt(expected)
 
 #code for the maximum count
-1 - (sum(dpois(0:17, lambda)))^7000
+1 - (sum(dpois(0:17, lambda)))^(229354/7000)
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+upper-lower
+
 
 ```
 
@@ -358,20 +391,56 @@ lambda_hat <- mean(counts)
 lambda_hat
 ```
 
+```{r}
+#distance between hits; exponential;gamma
+data
+distances_exp <- 0
+distances_gamma_2 <- 0
+distances_gamma_3 <- 0
+
+for (i in 1:295) {
+  distances_exp[i] <- (data[i + 1, ] - data[i, ])
+}
+
+for (i in 1:294) {
+  distances_gamma_2[i] <- (data[i + 2, ] - data[i, ])
+}
+
+for (i in 1:293) {
+  distances_gamma_3[i] <- (data[i + 3, ] - data[i, ])
+}
+
+dat_distances_exp <- as.data.frame(distances_exp)
+dat_distances_gamma_2 <- as.data.frame(distances_gamma_2)
+dat_distances_gamma_3 <- as.data.frame(distances_gamma_3)
+
+#x <- rgamma(100000, shape = 2, rate = 0.2)
+#fit.params <- fitdistr(x, "gamma", lower = c(0, 0))
+
+data =  data.frame(x=rexp(n = 100000, rate = .85))
+m <- ggplot(data, aes(x=data$x))
+m + geom_density()
+
+
+ggplot(data = dat_distances_gamma_2) +
+  geom_histogram(aes(x = dat_distances_gamma_2), bins = 20)
+
+ggplot(data = dat_distances_gamma_3) +
+  geom_histogram(aes(x = dat_distances_gamma_3), bins = 30)
+```
+
 
 ```{r}
-#information and confidence interval code
 #exponential and gamma for distance between hits code
-#maximum count code
 #z-test code
-#sliding window code
+#sliding window code 
 ```
 
 
 Background on the problem. HCVM family, volatility, desire to find replication sites. Replication
 sites appear as clusters of palindromes.
 
-These are the main questions we want to answer:
+These are the main questions we want to answer:e
 1. How do we find clusters of palindromes?  
 2. How do we determine whether a cluster is a chance occurrence or an 
 

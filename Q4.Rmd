@@ -1,0 +1,51 @@
+---
+title: "Quiz 3"
+author: "Jonathan Stuart"
+date: "4/4/2018"
+output: html_document
+---
+
+##9.1
+-the likelihood ratio is the ratio of the probabilities of two possible outcomes for the same x value.  
+-prior probability, likelihood ratio, posterior probability  
+-"Your decision would be based on the likelihood ratio: you accept H0 if the   likelihood ratio is greater than c, and you reject H0 if the likelihood ratio is less than c."  
+-there is a correspondence between the prior probabilities and the two types of errors  
+
+##9.2 
+-null hypothesis  
+-alternative hypothesis  
+-type I error: rejecting the null when it is true  
+-significance level: probability of a type I error, $\alpha$  
+-type II error: accepting the null hypothesis when it is false, $\beta$  
+-power: probability of rejecting the null when it is false, $1 - \beta$  
+-test statistic: this is the likelihood ration  
+-rejection region: set of values of the test statistic that lead to a rejection of the null hypothesis  
+-acceptance region: set of values that lead to acceptance of the null hypothesis  
+-null distribution: probability distribution of the test statistic when the null hypothesis is true  
+-simple hypothesis: when the probability distribution is completely specified, including the parameter(s)  
+-composite hypothesis: when the probability distribution is not completely specified  
+
+**Neymann-Pearson Lemma**  
+*Useful when both hypotheses are simple; Bayesian requires both be simple*   
+*Only null need be simple to construct a test*  
+*Prioritizes a decision, and the probabilities of the two types of errors. There's also no need for the prior probabilities*  
+
+With both hypotheses as simple, when the likelihood ratio is less than a constant c and significance level $\alpha$, *any other test* with significance level less than $\alpha$ has power less than or equal to that of the likelihood ratio test. Among all such possible partitions, that based on the likelihood ratio maximizes the power.  
+
+**Specifying a Significance Level, Concept of a p-value**  
+-small values of $\alpha$ are usually used  
+-p-value: the smallest significance level at which the null hypothesis would be rejected; also, the probability under the null hypothesis of a result as or more extreme than that actually observed.
+-the smaller the p-value, the stronger the evidence against the null hypothesis. Large values of T tend to lend credence to the alternative hypothesis, where T is the null distribution  
+
+-The Bayesian paradigm summarizes the evidence for and against the null hypothesis as a posterior probability; must specify probability models for both hypotheses, and assign valid priors  
+-a p-value is *not* the posterior probability; it is the probability of a results as or more extremem than that actually observed *if the null hypothesis were true.*  
+
+**The Null Hypothesis**  
+
+
+
+**Uniformly Most Powerful Test**
+
+
+
+

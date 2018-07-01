@@ -1,0 +1,415 @@
+---
+title: "Lab02 - CMV DNA Analysis"
+author: "Jonathan Stuart"
+date: "3/21/2018"
+output: pdf_document
+---
+```{r, echo=FALSE, include=FALSE}
+library('dplyr')
+data <- read.csv("hcmv.csv")
+```
+```{r, echo=FALSE, include=FALSE}
+#funtion to calculate the true length of the vector of palindrome counts
+true_length <- function(x) {
+  floor(229354/x)
+}
+
+#function that counts the number of palindromes and takes input of interval size
+palindrome_count <- function(x) {
+  counts <- 0
+  iterator <- seq(from = 1, to = 229354, by = x)
+  counts[1] <- nrow(filter(data, data[, 1] < x))
+  for (i in 1:length(iterator)) {
+    counts[i + 1] <- nrow(filter(data, data[, 1] > (iterator[i + 1] - iterator[1]) & 
+                                  data[, 1] < iterator[i + 2] - iterator[1]))
+  }
+  counts <- counts[1:true_length(x)]
+  return(counts)
+}
+```
+```{r, echo=FALSE, include=FALSE}
+#goodness of fit code - 500
+
+#counting number of palindromes in each interval
+counts <- palindrome_count(500)
+#counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
+lambda
+
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed_500 <- c(sum(count_table[1]), count_table[2], count_table[3], sum(count_table[4:7]))
+
+observed_500 <- unname(observed_500)
+#observed
+expected_500 <- 0
+#expected
+
+#calculating expected values
+expected_500[1] <- length(counts) * dpois(0, lambda)
+expected_500[2] <- length(counts) * dpois(1, lambda)
+expected_500[3] <- length(counts) * dpois(2, lambda)
+expected_500[4] <- length(counts) * sum(dpois(3:8, lambda))
+
+#calculating the chi-square test statistic
+chi_test_statistic_500 <- sum((observed_500 - expected_500)^2 / expected_500)
+
+#calculating the degrees of freedom
+degrees_of_freedom_500 <- length(expected_500) - 2
+
+gof_500 <- 1 - dchisq(chi_test_statistic_500, degrees_of_freedom_500)
+
+#calculating risiduals
+  res_500 <- (observed_500 - expected_500) / sqrt(expected_500)
+
+#code for the maximum count
+max_counts_500 <- (1 - (sum(dpois(0:7, lambda)))^(229354/500))
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+#lambda - (1.96 / sqrt(8/lambda))
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+ci_500 <- upper-lower
+
+
+counts_500 <- rbind(observed_500, expected_500)
+
+
+```
+```{r, echo=FALSE, include=FALSE}
+#goodness of fit code - 2500
+
+#counting number of palindromes in each interval
+counts <- palindrome_count(2500)
+counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
+lambda
+
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed_2500 <- c(count_table[1], count_table[2], count_table[3], count_table[4], count_table[5], count_table[6], sum(count_table[7:9]))
+
+observed_2500 <- unname(observed_2500)
+observed_2500
+expected_2500 <- 0
+
+#calculating expected values
+expected_2500[1] <- length(counts) * dpois(0, lambda)
+expected_2500[2] <- length(counts) * dpois(1, lambda)
+expected_2500[3] <- length(counts) * dpois(2, lambda)
+expected_2500[4] <- length(counts) * dpois(3, lambda)
+expected_2500[5] <- length(counts) * dpois(4, lambda)
+expected_2500[6] <- length(counts) * dpois(5, lambda)
+expected_2500[7] <- length(counts) * sum(dpois(6:13, lambda))
+
+
+#calculating the chi-square test statistic
+chi_test_statistic_2500 <- sum((observed_2500 - expected_2500)^2 / expected_2500)
+
+#calculating the degrees of freedom
+degrees_of_freedom_2500 <- length(expected_2500) - 2
+
+gof_2500 <- 1 - dchisq(chi_test_statistic_2500, degrees_of_freedom_2500)
+
+#calculating risiduals
+ res_2500 <-  (observed_2500 - expected_2500) / sqrt(expected_2500)
+
+#code for the maximum count
+max_counts_2500 <- 1 - (sum(dpois(0:12, lambda)))^(229354/2500)
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+ci_2500 <- upper-lower
+
+counts_2500 <- rbind(observed_2500, expected_2500)
+```
+```{r, echo=FALSE, include=FALSE}
+
+  #counting number of palindromes in each interval
+  counts <- palindrome_count(4000)
+  counts
+  
+  #estimating lambda_hat as x_bar
+  lambda <- sum(counts) / length(counts)
+  lambda
+  
+  #calculating the observed values (this doesn't account for intervals with zero palindromes)
+  count_table <- table(counts)
+  count_table
+  
+  observed_4000 <- c(sum(count_table[1:2]), count_table[3], count_table[4], 
+                count_table[5], count_table[6], count_table[7], 
+                count_table[8], sum(count_table[9:length(count_table)]))
+  
+  observed_4000 <- unname(observed_4000)
+  observed_4000
+  expected_4000 <- 0
+  
+  #calculating expected values
+  expected_4000[1] <- length(counts) * sum(dpois(0:2, lambda))
+  expected_4000[2] <- length(counts) * dpois(3, lambda)
+  expected_4000[3] <- length(counts) * dpois(4, lambda)
+  expected_4000[4] <- length(counts) * dpois(5, lambda)
+  expected_4000[5] <- length(counts) * dpois(6, lambda)
+  expected_4000[6] <- length(counts) * dpois(7, lambda)
+  expected_4000[7] <- length(counts) * dpois(8, lambda)
+  expected_4000[8] <- length(counts) * sum(dpois(9:14, lambda))
+  
+  #calculating the chi-square test statistic
+  chi_test_statistic_4000 <- sum((observed_4000 - expected_4000)^2 / expected_4000)
+  
+  #calculating the degrees of freedom
+  degrees_of_freedom_4000 <- length(expected_4000) - 2
+  
+  gof_4000 <- 1 - dchisq(chi_test_statistic_4000, degrees_of_freedom_4000)
+  
+  #calculating risiduals
+  res_4000 <- (observed_4000 - expected_4000) / sqrt(expected_4000)
+  
+  #code for the maximum count
+max_counts_4000 <- 1 - (sum(dpois(0:13, lambda)))^(floor(229354/4000))
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+ci_4000 <- upper-lower
+
+counts_4000 <- rbind(observed_4000, expected_4000)
+```
+```{r, echo=FALSE, include=FALSE}
+#goodness of fit code - 7000
+
+#counting number of palindromes in each interval
+counts <- palindrome_count(7000)
+counts
+
+#estimating lambda_hat as x_bar
+lambda <- sum(counts) / length(counts)
+lambda
+
+#calculating the observed values (this doesn't account for intervals with zero palindromes)
+count_table <- table(counts)
+count_table
+
+observed_7000 <- c(sum(count_table[1:2]), count_table[3], count_table[4], count_table[5], count_table[6], count_table[7], count_table[8], count_table[9], count_table[10], count_table[11], sum(count_table[12:13]))
+
+observed_7000 <- unname(observed_7000)
+observed_7000
+expected_7000 <- 0
+
+#calculating expected values
+expected_7000[1] <- length(counts) * sum(dpois(0:4, lambda))
+expected_7000[2] <- length(counts) * dpois(5, lambda)
+expected_7000[3] <- length(counts) * dpois(6, lambda)
+expected_7000[4] <- length(counts) * dpois(7, lambda)
+expected_7000[5] <- length(counts) * dpois(8, lambda)
+expected_7000[6] <- length(counts) * dpois(9, lambda)
+expected_7000[7] <- length(counts) * dpois(10, lambda)
+expected_7000[8] <- length(counts) * dpois(11, lambda)
+expected_7000[9] <- length(counts) * dpois(12, lambda)
+expected_7000[10] <- length(counts) * dpois(13, lambda)
+expected_7000[11] <- length(counts) * sum(dpois(14:18, lambda))
+
+#calculating the chi-square test statistic
+chi_test_statistic_7000 <- sum((observed_7000 - expected_7000)^2 / expected_7000)
+
+#calculating the degrees of freedom
+degrees_of_freedom_7000 <- length(expected_7000) - 2
+
+gof_7000 <- 1 - dchisq(chi_test_statistic_7000, degrees_of_freedom_7000)
+
+#calculating risiduals
+  res_7000 <- (observed_7000 - expected_7000) / sqrt(expected_7000)
+
+#code for the maximum count
+max_counts_7000 <- 1 - (sum(dpois(0:17, lambda)))^(229354/7000)
+
+#confidence interval
+#Fisher information for Poisson is 1/lambda
+lower <- lambda - (1.96 * sqrt(lambda/8))
+upper <- lambda + (1.96 * sqrt(lambda/8))
+
+ci_7000 <- upper-lower
+
+counts_7000 <- rbind(observed_7000, expected_7000)
+```
+
+##Introduction
+Human cytomagalovirus (HCMV) is a disease that effects somewhere between 30% and 80% of the population, varying geographically. Though the virus lays dormant once it infects a host, it can become harmful when it enters a productive cycle, replicating many thousands of copies of itself [1]. In this productive phase, it is most harmful to individuals with chronically weakened immune systems, and, additionally, is the leading cause of mental retardation and deafness at birth [2]. Being part of the Herpes family, biologists have hypothesized that patterns in the distribution of the virus' DNA base pairs might give insight into the location of the site of replication. In an effort to mitigate the effects of this particular disease, we are faced with the problem of studying the distribution of base pair palindromes in order to locate the virus' replication site. If we are able to develop methods to efficiently identify the locations of palindromes, we will have given researchers a reliable approach toward controlling the disease by impeding its spread and treating those already infected. 
+
+Along a strand of HCMV DNA, we have observed the existence of 229, 354 DNA base pairs. It has been further observed that, within these base pairs, 296 palindromes can be found, each between 10 and 18 base pairs long. Given that two other viruses in the Herpes family have replication sites marked by abnormal characteristics of base pair palindromes, research is underway to determine if HCMV does as well. To assist you in your research, we will determine if clusters of palindromes are non-random, and thereby indicative of DNA replication sites. In the process of this investigation, we will answer the following questions:  
+
+1. How do we find clusters of palindromes?  
+2. How do we determine whether a cluster is a chance occurrence or an indication of a replication site?
+
+##Methodology 
+In order to answer these questions, we used inferential statistics to find a distribution that fit the data well. Once we had a distribution that the data could likely have come from, we examined whether or not the area with the maximum number palindromes could have been a chance occurrence or not. From this, we made our determination of where researchers should look for clusters of palindromes and, by implication, DNA replication sites. 
+
+We used intervals of length 500, 2500, 4000, and 7000 base pairs which divided the data set into 458, 91, 57, and 32 intervals, respectively. This process was important due to the fact that the interval size had an impact on the goodness of fit of the Poisson distribution to the data; it was important to choose an interval size that was neither to large, nor too small. Once the data was partitioned into intervals of these sizes, we counted the number of palindromes in each interval. From these counts, we were then able to conduct a series of hypothesis tests to determine how well the Poisson distribution could describe the data we had been given. 
+
+Starting with the chi-squared goodness of fit test, we treated each interval size and corresponding palindrome count to determine how closely the Poisson distribution fit the given data. We then calculated residual values and again sought to answer the question of how closely the Poisson distribution fit the given data. Next we constructed 95% confidence intervals for the parameters $\lambda$ for each of the 4 intervals. From there, we examined the inter-arrival distances of hits of palindromes and asked how closely they adhered to a exponential and gamma distributions. Finally, we examined the p-value for the maximum number of palindromes counts, which allowed us to answer the question of whether or not a cluster of palindromes was significant for identifying a DNA replication site.  
+
+##Results 
+First we needed to get counts of palindromes for each of the interval sizes mentioned above, 500, 2500, 4000 and 7000. We can see a table of those counts here.
+
+Then, assuming applicability of the Poisson distribution, we can take $\hat\lambda$ to be $\bar{x}$, an unbiased estimate for $\lambda$. We then created vectors of observed and expected values, which can be seen below for each of the intervals.
+
+###Tables of Expected and Observed Counts
+| Interval Size | Expected Count| Observed Count|
+| ------------- |:-------------:| -----:|
+| 500           | 241           | 255   |
+|               | 155           | 145   |
+|               | 50            | 34    |
+|               | 13            | 24    |
+
+| Interval Size | Expected Count| Observed Count|
+| ------------- |:-------------:| -----:|
+| 2500          | 4             | 6     |
+|               | 12            | 13    |
+|               | 18            | 14    |
+|               | 20            | 19    |
+|               | 16            | 19    |
+|               | 11            | 11    |
+|               | 10            | 9     |
+
+| Interval Size | Expected Count| Observed Count|
+| ------------- |:-------------:| -----:|
+| 4000          | 6             | 7   |
+|               | 8             | 8   |
+|               | 10            | 10  |
+|               | 10            | 9   |
+|               | 9             | 8   |
+|               | 6             | 5   |
+|               | 4             | 4   |
+|               | 4             | 6   |
+  
+| Interval Size | Expected Count| Observed Count|
+| ------------- |:-------------:| -----:|
+| 7000          | 2             | 2     |
+|               | 2             | 3     |
+|               | 3             | 2     |
+|               | 4             | 5     |
+|               | 4             | 4     |
+|               | 4             | 4     |
+|               | 4             | 2     |
+|               | 3             | 2     |
+|               | 2             | 4     |
+|               | 2             | 2     |
+|               | 2             | 2     |
+
+
+```{r, echo=F}
+par(mfrow = c(2,2))
+barplot(counts_500, beside = T, main = "Interval Size 500", ylab = "Frequency", xlab = "Palindrome Counts, Observed vs. Expected")
+barplot(counts_2500, beside = T, main = "Interval Size 2500", ylab = "Frequency", xlab = "Palindrome Counts, Observed vs. Expected")
+barplot(counts_4000, beside = T, main = "Interval Size 4000", ylab = "Frequency", xlab = "Palindrome Counts, Observed vs. Expected")
+barplot(counts_7000, beside = T, main = "Interval Size 7000", ylab = "Frequency", xlab = "Palindrome Counts, Observed vs. Expected")
+```
+
+With these counts, we then conducted the chi-square goodness of fit test for the Poisson distribution with parameter $\hat\lambda$. 
+
+###Table of Chi-Square Values
+| Interval Size | Chi-Square Value|
+| ------------- |:-------------:|
+| 500           | 0.99988       |
+| 2500          | 0.84980       |
+| 4000          | 0.96025       |
+| 7000          | 0.93652       |
+
+Here, the closer the values are to 1, the better the indication of fitness of the Poisson distribution to the observed data. From these data it appears that 4000 would be the optimal interval size to use.
+
+Then, looking at the standardized residuals to see more closely where the fit occurs for each of the observed count totals, we found that the interval size of 4000 showed the best results, as residual values less than three in absolute value indicate goodness of fit. Here, we have a table to average residual values.
+
+
+
+
+###Table of Average Residual Values
+| Interval Size | Average Residual|
+| ------------- |:-------------:|
+| 500           | 1.79          |
+| 2500          | 0.6           |
+| 4000          | 0.3           |
+| 7000          | 0.5           |
+
+
+We then generated the following 95% confidence intervals for the parameters $\lambda$ for each sized interval of base pairs. From these data, the tightest confidence interval appears to come from the 500 base pair interval.
+
+###Table of Confidence Intervals
+| Interval Size | Confidence Interval|
+| ------------- |:-------------:|
+| 500           | 1.112293      |
+| 2500          | 2.491117      |
+| 4000          | 3.147584      |   
+| 7000          | 4.157788      |
+
+
+Looking then toward the likelihood that the maximum palindrome count for each interval was at least as large as the highest count, we came up with the following p-values.
+
+###Table of Maximum Count P-values
+| Interval Size | Confidence Interval|
+| ------------- |:-------------:|
+| 500           | 0.0001904997      |
+| 2500          | 0.003140679     |
+| 4000          | 0.05190829     |   
+| 7000          | 0.1603417     |
+
+Next we examined the distance between hits, as the inter-arrival time should approximate the exponential distribution if the Poisson distribution governs the data. 
+
+```{r, echo=F}
+#distance between hits; exponential;gamma
+distances_exp <- 0
+distances_gamma_2 <- 0
+
+for (i in 1:295) {
+  distances_exp[i] <- (data[i + 1, ] - data[i, ])
+}
+
+for (i in 1:294) {
+  distances_gamma_2[i] <- (data[i + 2, ] - data[i, ])
+}
+
+hist(distances_exp, main = "Distances Between Palindromes", xlab = "Distance", prob = TRUE, ylab = "Frequency", yaxt='n')
+curve(dexp(x, rate = .0015), col = 2, lty = 2, lwd = 2, add = TRUE)
+
+
+```
+
+We also examined pairs, triplets, etc. of distances to inquire after the fitness of the gamma distribution. Here we have plots for pairs of distances.
+
+```{r, echo=FALSE}
+par(mfrow = c(2,1))
+x <- seq(0, 7, by=.001)
+plot(x, dgamma(x, 1.5, 1), type="l",
+ ylim=c(0,1), ylab="Density",
+main="Gamma Density")
+
+hist(distances_gamma_2, main = "Histogram of Pairs of Distances", xlab = "Distance")
+lines(x, dgamma(x, 1.5, 1), col=3)
+
+
+```
+
+Aggregating these test results into a single metric, we determined that the Poisson distribution does effectively describe the data when considering intervals of 4000 base pairs. 
+
+##Discussion
+Taking the results of all of these hypothesis tests into account, we decided upon an interval of 4000 base pairs, and made the conclusion that the Poisson distribution did in fact fit the given data. Though the observed and expected counts were quite close for all interval sizes, it was through the chi-squared goodness of fit tests and the associated residual values that the 4000 base pair interval showed its viability. And with regard to the maximum count p-value, this test statistic is the most straightforward about the usefulness of this approach in solving the questions laid out in the introduction. From the certainty of the locations of maximum counts that the maximum count test statistic reveals, we have our clearest guidance to researchers seeking DNA replication sites by identifying areas of palindrome clustering. 
+
+One limitation, however, was the fact that the exponential distribution fit the inter-arrival time of palindromes, while the gamma distribution did not fit pairs of inter-arrival distances. This could be due to the clustering of palindromes interfering with and obfuscating arrival times, and could also be due to the fact that the Poisson distribution is not an **exact** fit for the data. Assuming the Poisson and then estimating $\lambda$ could be problematic in that we are conducting our analysis with an incorrect parameter $\hat\lambda$.
+  
+##Conclusion
+In summary, we have taken the two questions posed at the outset and carried out a statistical analysis of the given data. From that analysis, we have determined that the Poisson distribution does accurately account for the observed data, and that an interval size of 4000 base pairs is a useful division of a strand of HCMV DNA. Our analysis tells us that the likelihood of identifying clusters of palindromes at least as large as the expected and observed maximum counts is very high, thus providing reliable guidance to researchers as they attempt to better understand HCMV replication.

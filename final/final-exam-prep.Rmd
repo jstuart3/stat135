@@ -1,0 +1,60 @@
+---
+title: "Stat 135 Final Exam Prep"
+author: "Jonathan Stuart"
+date: "5/3/2018"
+output: pdf_document
+---
+
+
+Here's a list of topics that will not be covered on the midterm.  Other than those listed here, anything in Nolan/Speed Ch 1-5 and Rice Ch 7-8 is fair game.  Also here's a list of problems in Rice that I think are good practice and generally appropriate difficulty level for a midterm. I'm recommending just the odd problems so that you will have the answers to look at. Some of these are redundant with what you've done in section but I thought it would be nice to have the list in one place.  I'm not expecting that you do all of them, just want to give you suggestions if you are looking for more problems to do. Also I will give a formula sheet on the midterm, I'll post it here early next week.
+
+Ch 7: 1-25, 31-37, 53-57  
+Ch 8: 5abc, 13, 19ab, 21, 23, 27, 31, 47abc, 53, 55ab  
+
+Rice:
+
+Ch 7: omit 7.4
+
+Ch 8: omit 8.5.1 multinomial, omit everything in 8.6 after Example A,
+
+omit 8.7 efficiency and Cramer Rao, omit 8.8.2 Rao-Blackwell.
+
+Nolan/Speed:
+
+Ch 1: omit p15 skewness/kurtosis
+
+Ch 2: omit nothing
+
+Ch 3: omit p68-69 lognormal distribution and parametric bootstrap
+
+Ch 4: omit nothing
+
+Ch 5: omit p108-112 multinomial and everything after
+
+--------
+I've revised this to include Ch 9 and shortened what I'm asking you to know about Ch 14.  Also refer to the announcement before the midterm for what to study based on the midterm material.
+
+At the end of this announcement I'm listing problems from Rice (that mostly have solutions) that I think are good practice for the final. Since the midterm we've covered Rice Ch 9,10,11,13,14. We also covered Nolan and Speed Ch 7, but the only thing that isn't really in Rice is the bivariate normal formulation of the regression line on pages 151-152. I won't test you on anything that appears ONLY in Nolan/Speed, however the material on bivariate normal is really good for building a connection between regression and the underlying probability theory (see also Pitman's Probability book, section 6.5 if you want to deepen that connection). Below are the sections in each chapter of Rice that are relevant for the final.
+
+In Rice Ch 9, focus on sections 1-4 and section 6.  I won't directly test you on sections 5 and 8 although section 5 provides a good extended example that will help deepen your understanding of the likelihood ratio test, and section 8 is good for understanding quantile plots.
+
+In Rice Ch 10, we did everything, but I won't test you on M estimates (section 10.4.4) or details of box plots (10.6). Scatter plots, in 10.7, I covered briefly but I’ll go over this material more in the context of regression.
+
+In Rice Ch 11, we omitted section 11.2.4 (Bayesian Approach). I didn't discuss the examples in 11.3.3,11.4.1,11.4.3-5 but they are worth reading to better understand the related concepts. I won’t test you on any of those specific examples.
+
+In Rice Ch 13, we omitted 13.6 (Odds Ratio). Many of the methods are explained in Nolan and Speed Ch 5 in terms of more fundamental probability assumptions to get the null hypothesis in different situations. Rice focuses more on approximate answers through the chi-square tests.
+
+In Rice Ch 14, I'll only test you directly on sections 1 and 2. Nolan and Speed Ch 7 covers much the
+same material in a more conceptual (less mathy) way.  You can ignore problems 
+
+For studying, I recommend using Nolan and Speed to provide additional conceptual explanation for some topics, in particular I think the extended examples in Ch 5 (for chi-square tests) and 7 (regression) are a good way to get ideas firmly in your head. You should also go over the labs to make sure you understand them and I may ask a simple question about coding/functions that you would have had to use to do one of the labs.
+
+I'll put together a formula sheet, should get it posted early in RRR week.
+
+Finally, here are suggested problems from different chapters. Generally the earlier problems are more suitable exam style problems, and the later problems are more involved problems that will help you understand the material more deeply. Roughly, everything up to about 19 you might consider to be highly recommended, the others are suggestions if you’re looking for more practice.
+
+Ch 9: 1,5,7,9,17ab,19,23,25,27,33,35,37,39,43,45  
+Ch 10: 3,7,11,13,15,17,19,29,31,33,37,41  
+Ch 11: 7,11,13,15,17,19,21,25,27,31,37,49,53  
+Ch 13: 1,3,5,9,15,17,19,23,25,27  
+Ch 14: 1,3,11,15,17,19,21,23,25  
